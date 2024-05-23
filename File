@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixel Game</title>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; }
+        canvas { border: 1px solid black; image-rendering: pixelated; }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="512" height="512"></canvas>
+    <script src="game.js"></script>
+</body>
+</html>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+const tileSize = 32;
+const worldWidth = 16;
+const worldHeight = 16;
+const player = { x: 1, y: 1, width: tileSize, height: tileSize, color: 'blue' };
+const coins = [
+    { x: 3, y: 3, collected: false },
+    { x: 7, y: 7, collected: false }
+];
+const world = [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+    [1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1],
+    [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+    [1, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1],
+    [1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1],
+    [1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+];
+
+function drawWorld() {
+    for (let y = 0; y < worldHeight; y++) {
+        for (let x = 0; x < worldWidth; x++) {
+            ctx.fillStyle = world[y][x] === 1 ? 'green' : 'lightgray';
+            ctx.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
+        }
+    }
+}
+
+function drawPlayer() {
+    ctx.fillStyle = player.color;
+    ctx.fillRect(player.x * tileSize, player.y * tileSize, player.width, player.height);
+}
+
+function drawCoins() {
+    coins.forEach(coin => {
+        if (!coin.collected) {
+            ctx.fillStyle = 'gold';
+            ctx.beginPath();
+            ctx.arc((coin.x * tileSize) + tileSize / 2, (coin.y * tileSize) + tileSize / 2, tileSize / 4, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    });
+}
+
+function checkCollision() {
+    coins.forEach(coin => {
+        if (!coin.collected && player.x === coin.x && player.y === coin.y) {
+            coin.collected = true;
+            alert("Coin collected!");
+        }
+    });
+}
+
+document.addEventListener('keydown', (event) => {
+    switch (event.key) {
+        case 'ArrowUp':
+            if (world[player.y - 1] && world[player.y - 1][player.x] === 0) {
+                player.y--;
+            }
+            break;
+        case 'ArrowDown':
+            if (world[player.y + 1] && world[player.y + 1][player.x] === 0) {
+                player.y++;
+            }
+            break;
+        case 'ArrowLeft':
+            if (world[player.y][player.x - 1] === 0) {
+                player.x--;
+            }
+            break;
+        case 'ArrowRight':
+            if (world[player.y][player.x + 1] === 0) {
+                player.x++;
+            }
+            break;
+    }
+    checkCollision();
+    draw();
+});
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawWorld();
+    drawPlayer();
+    drawCoins();
+}
+
+draw();
